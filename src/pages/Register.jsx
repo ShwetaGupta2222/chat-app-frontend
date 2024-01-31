@@ -14,6 +14,7 @@ function Register() {
        navigate("/");
     }
   },[currentUser])
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const username = e.target[0].value;
@@ -41,8 +42,8 @@ function Register() {
       })
       .catch((e) => {
         setMsg(e.message);
-      });
-    setLoading(false);
+      })
+      .finally(()=>{setLoading(false);})
   };
   const handleGenderChange = (event) => {
     setSelectedGender(event.target.value);
@@ -55,7 +56,6 @@ function Register() {
         <form onSubmit={handleSubmit}>
           <input type="text" required placeholder="Username" />
           <input type="password" required placeholder="Password" />
-          <span>Gender</span>
           <div className="gender">
           <label>
             <input type="radio" required name="gender" value="male"  checked={selectedGender === 'male'} onChange={handleGenderChange}/>
@@ -73,7 +73,7 @@ function Register() {
             <button>Sign Up</button>
           )}
           {loading && (
-            <div>
+            <div className="flex-center">
               <CircularProgress />
             </div>
           )}

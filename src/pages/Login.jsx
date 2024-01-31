@@ -39,8 +39,8 @@ function Login(){
       .catch((e) => {
         console.log(e)
         setMsg(e.message);
-      });
-    setLoading(false);
+      })
+      .finally(()=>{setLoading(false);})
   };
 
   return (
@@ -57,7 +57,7 @@ function Login(){
             <button>Login</button>
           )}
           {loading && (
-            <div>
+            <div className="flex-center">
               <CircularProgress />
             </div>
           )}

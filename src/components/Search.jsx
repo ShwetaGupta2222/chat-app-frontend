@@ -1,21 +1,25 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import {AuthContext} from "../context/AuthContext"
 import Male from "../img/male.jpeg"
 import Female from "../img/female.jpeg"
 import { CircularProgress } from '@mui/material'
 import { ChatContext } from '../context/ChatContext'
+import { IndexContext } from '../context/IndexContext'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 function Search() {
   const [username, setUsername] = useState("")
   const [users, setUsers] = useState([])
-  const [user, setUser] = useState()
   const [loading, setLoading] = useState(false);
   const {currentUser}=useContext(AuthContext)
-  const {setSecondUser,sendMessage,chats}=useContext(ChatContext)
+  const {setState}=useContext(IndexContext)
+  const {setSecondUser,secondUser,chats}=useContext(ChatContext)
+  useEffect(()=>{
+     setUsername("")
+     setUsers([])
+  },[secondUser,chats])
   const handleSearch=async(e)=>{
-    setUser(e.target.value);
-    if(e.code==='enter' || true){
+    setUsername(e.target.value);
     if(e.target.value===""){
       setUsers([]);
       return;
@@ -29,36 +33,38 @@ function Search() {
         return response.json();
       })
       .then((data) => {
-        setUsers(data);
+        const items = [];
+        data.forEach((item)=>{
+          if(chats.has(item?.name) || item.name === currentUser.name)return;
+             items.push(item);
+        })
+        setUsers(items);
       })
       .catch((e) => {
         console.log(e.message);
-      });
-    setLoading(false);
-  } 
+      })
+      .finally(()=>{setLoading(false);})
   };
   const handleSelect=async(user)=>{
       setSecondUser({name: user.name, gender: user.gender });
-      setUser("");
       setUsers([user]);
+      setState(true);
   };
   return (
     <div className="search">
       <div className="searchForm">
-        <input type="text" placeholder='Find a user' value = {user}  onChange={handleSearch}/>
+        <input type="text" placeholder='Find new users' value={username} onChange={(e)=>handleSearch(e)}/>
       </div>
-      {username && (users.length===0) && <span>User not found!</span>}
+      {username && (!loading) && (users.length===0) && <span>No unknown user with this name!</span>}
       {users.map((user)=>{ 
-        if(user.name===currentUser.name)return <></>;
-        if(chats.has(user.name))return <></>;
         return(
-        <div className='userChat' key={user.name} onClick={()=>{ setUser(user); return(handleSelect(user))}}>
+        <div className='userChat' key={user.name} onClick={()=>{ return(handleSelect(user))}}>
         <img className="profileImg" src={user?.gender==="male"?Male:Female} alt=""/>
         <div className="userChatInfo">
           <span>{user?.name}</span>
         </div>
       </div>)})}
-      {loading && <div> <CircularProgress /> </div>}
+      {loading && <div className='my-5 flex-center'> <CircularProgress size={30}/> </div>}
     </div>
   )
 }
